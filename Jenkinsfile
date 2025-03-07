@@ -1,5 +1,11 @@
 pipeline {
     agent any
+    parameters {
+        choice(name: 'TERRAFORM_ACTION', choices: ['apply', 'destroy', 'plan'], description: 'Select Terraform action to perform')
+        string(name: 'USER_NAME', defaultValue: 'Sreerag', description: 'Specify who is running the code')
+    }
+
+
     
     environment {
         AWS_ACCESS_KEY_ID = credentials('aws-jenkins-integration')
