@@ -41,7 +41,7 @@ pipeline {
 
         stage('EKS Connection Test') {
             steps {
-                script {withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8-cluster', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8-new', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
                         sh 'kubectl get nodes'
                         sh 'kubectl apply -f deployment.yaml'
                         sh 'kubectl apply -f service.yaml'
