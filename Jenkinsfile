@@ -13,7 +13,7 @@ pipeline {
                     extensions: [],
                     userRemoteConfigs: [[
                         credentialsId: 'jenkins-git-integration',
-                        url: 'https://github.com/sreeragdevops/jenkins-test-aws'
+                        url: 'https://github.com/sreeragdevops/jenkins-terraform.git'
                     ]]
                 ])
             }
