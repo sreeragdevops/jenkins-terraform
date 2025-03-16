@@ -1,16 +1,10 @@
 pipeline {
     agent any
     parameters {
-        choice(name: 'TERRAFORM_ACTION', choices: ['apply', 'destroy', 'plan'], description: 'Select Terraform action to perform')
-        string(name: 'USER_NAME', defaultValue: 'Sreerag', description: 'Specify who is running the code')
+        string(name: 'DOCKER_IMAGE_NAME', defaultValue: 'cat-image', description: 'Name of the Docker image')
     }
-
-
     
-    environment {
-        AWS_ACCESS_KEY_ID = credentials('aws-jenkins-integration')
-    }
-    stages {
+     stages {
         stage('Code checkout from Git') {
             steps {
                 checkout([
@@ -19,32 +13,50 @@ pipeline {
                     extensions: [],
                     userRemoteConfigs: [[
                         credentialsId: 'jenkins-git-integration',
-                        url: 'https://github.com/sreeragdevops/jenkins-terraform'
+                        url: 'https://github.com/sreeragdevops/jenkins-test-aws'
                     ]]
                 ])
             }
         }
 
-        stage('terraform init') {
+
+        stage('Build Docker Image') {
             steps {
                 script {
-                    sh "terraform init"
+                    sh " docker build -t ${params.DOCKER_IMAGE_NAME}:latest -f Dockerfile ."
                 }
             }
         }
-        stage('terraform apply') {
+
+        stage('Push to Docker Hub') {
             steps {
                 script {
-                    sh "terraform apply --auto-approve"
+                    // Assuming 'jenkin-dockerhub' is the ID of your Docker Hub credentials
+                    withCredentials([usernamePassword(credentialsId: 'Docker-hub-first-credentials', passwordVariable: 'pwd', usernameVariable: 'user')]) {
+                        // Log in to Docker Hub using provided credentials
+                        sh "echo '${pwd}' | docker login -u ${user} --password-stdin"
+                        
+                        // Tag and push the built Docker image to Docker Hub
+                        sh "docker tag ${params.DOCKER_IMAGE_NAME}:latest ${user}/${params.DOCKER_IMAGE_NAME}:latest"
+                        sh "docker push ${user}/${params.DOCKER_IMAGE_NAME}:latest"
+                    }
+                }
+            }
+            stage('EKS Connection Test') {
+            steps {
+                script {
+                    // Ensure the withKubeConfig step is correctly set
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8-cluster', namespace: '', restrictKubeConfigAccess: false, serverUrl: ''){
+                        sh 'kubectl get nodes'
+                        sh 'kubectl apply -f deployment.yaml'
+                        sh 'kubectl apply -f service.yaml'
+                        sh 'kubectl get svc car-app-svc -o wide'
+                    }
                 }
             }
         }
-        stage('terraform destroy') {
-            steps {
-                script {
-                    sh "terraform destroy --auto-approve"
-                }
-            }
+    }
+}
         }
     }
 }
