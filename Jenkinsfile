@@ -3,6 +3,9 @@ pipeline {
     parameters {
         string(name: 'DOCKER_IMAGE_NAME', defaultValue: 'cat-image', description: 'Name of the Docker image')
     }
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('aws-jenkins-integration')
+    }
 
     stages {
         stage('Code checkout from Git') {
