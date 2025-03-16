@@ -50,7 +50,7 @@ pipeline {
                         sh 'kubectl get nodes'
                         sh 'kubectl apply -f deployment.yaml'
                         sh 'kubectl apply -f service.yaml'
-                        sh 'kubectl get svc car-app-svc -o wide'
+                        sh 'kubectl get svc cat-app-svc -o wide'
                     }
                 }
             }
