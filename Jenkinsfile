@@ -42,7 +42,7 @@ pipeline {
                     }
                 }
             }
-            stage('EKS Connection Test') {
+          stage('EKS Connection Test') {
             steps {
                 script {
                     // Ensure the withKubeConfig step is correctly set
